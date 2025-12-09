@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sell vs Rent Analyzer • Jason Kaczmarski Team</title>
+  <style>
+    :root {
+      --jk-bg: #f7f7f9;
+      --jk-card: #ffffff;
+      --jk-border: #d9e0ea;
+      --jk-accent: #c8102e;
+      --jk-text: #1f2933;
+      --jk-muted: #6b7280;
+      --jk-radius: 10px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--jk-bg);
+      color: var(--jk-text);
+    }
+
+    .jk-wrapper {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .jk-card {
+      background: var(--jk-card);
+      border-radius: var(--jk-radius);
+      border: 1px solid var(--jk-border);
+      padding: 16px;
+      box-sizing: border-box;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+      margin-bottom: 16px;
+    }
+
+    h1, h2, h3 {
+      margin-top: 0;
+      font-weight: 600;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .jk-subtitle {
+      font-size: 0.9rem;
+      color: var(--jk-muted);
+      margin-bottom: 1rem;
+    }
+
+    .jk-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px 16px;
+    }
+
+    .jk-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+
+    .jk-label {
+      font-size: 0.85rem;
+      color: var(--jk-muted);
+    }
+
+    .jk-input-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    input[type="number"],
+    select {
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 6px;
+      border: 1px solid var(--jk-border);
+      padding: 6px 8px;
+      font-size: 0.9rem;
+    }
+
+    input[type="checkbox"] {
+      transform: scale(1.1);
+    }
+
+    .jk-suffix {
+      font-size: 0.8rem;
+      color: var(--jk-muted);
+      white-space: nowrap;
+    }
+
+    .jk-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 999px;
+      background: var(--jk-accent);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .jk-btn:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    .jk-results {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px 16px;
+      margin-top: 8px;
+    }
+
+    .jk-result-card {
+      border-radius: var(--jk-radius);
+      border: 1px solid var(--jk-border);
+      padding: 10px 12px;
+      background: #ffffff;
+      font-size: 0.9rem;
+    }
+
+    .jk-result-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .jk-result-highlight {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .jk-pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .jk-pill {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--jk-border);
+      color: var(--jk-muted);
+      background: #f9fafb;
+    }
+
+    .jk-note {
+      font-size: 0.8rem;
+      color: var(--jk-muted);
+      margin-top: 6px;
+    }
+
+    .jk-asterisk {
+      font-size: 0.75rem;
+      color: var(--jk-muted);
+      margin-top: 4px;
+    }
+
+    .jk-advanced-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 0.85rem;
+      color: var(--jk-muted);
+      cursor: pointer;
+    }
+
+    .jk-advanced-section {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--jk-border);
+      display: none;
+    }
+
+    .jk-warning {
+      font-size: 0.8rem;
+      color: #b45309;
+      background: #fef3c7;
+      border-radius: 6px;
+      padding: 6px 8px;
+      margin-top: 4px;
+    }
+
+    .jk-summary-win {
+      color: #166534;
+      font-weight: 600;
+    }
+
+    .jk-summary-lose {
+      color: #b91c1c;
+      font-weight: 600;
+    }
+
+    @media (max-width: 600px) {
+      .jk-card {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="jk-wrapper">
+  <div class="jk-card">
+    <h1>Sell vs Rent Analyzer</h1>
+    <div class="jk-subtitle">
+      Compare selling your current home now vs renting it out, over 5- and 10-year timelines.
+      <br/>
+      <span style="font-size:0.8rem;">For educational purposes only. Not tax, legal, or financial advice.</span>
+    </div>
+
+    <!-- INPUTS -->
+    <h3>1. Property & Loan</h3>
+    <div class="jk-grid">
+      <div class="jk-field">
+        <label class="jk-label" for="sh_value">Current Property Value</label>
+        <div class="jk-input-row">
+          <span class="jk-suffix">$</span>
+          <input id="sh_value" type="number" step="1000" placeholder="450000" />
+        </div>
+      </div>
+
+      <div class="jk-field">
+        <label class="jk-label" for="sh_balance">Current Loan Balance</label>
+        <div class="jk-input-row">
+          <span class="jk-suffix">$</span>
+          <input id="sh_balance" type="number" step="1000" placeholder="320000" />
+        </div>
+      </div>
+
+      <div class="jk-field">
+        <label class="jk-label" for="sh_rate">Interest Rate (Annual)</label>
+        <div class="jk-input-row">
+          <input id="sh_rate" type="number" step="0.01" placeholder="6.25" />
+          <span class="jk-suffix">%</span>
+        </div>
+      </div>
+
+      <div class="jk-field">
+        <label class="jk-label" for="sh_term">Remaining Loan Term</label>
+        <div class="jk-input-row">
+          <input id="sh_term" type="number" step="1" placeholder="28" />
+          <span class="jk-suffix">years</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>2. Rent & Expenses</h3>
+    <div class="jk-grid">
+      <div class="jk-field">
+        <label class="jk-label" for="sh_rent">Estimated Monthly Rent (Year 1)</label>
+        <div class="jk-input-row">
+          <span class="jk-suffix">$</span>
+          <input id="sh_rent" type="number" step="50" placeholder="2600" />
+        </div>
+      </div>
+
+      <div class="jk-field">
+        <label class="jk-label" for="sh_vacancy">Vacancy Allowance</label>
+        <div class="jk-input-row">
+          <input id="sh_vacancy" type="number" step="0.1" value="6" />
+          <span class="jk-suffix">% of rent</span>
+        </div>
+      </div>
+
+      <div class="jk-field">
+        <label class="jk-label" for="sh_mgmt">Property Management Fee</label>
+        <div class="jk-input-row">
+          <input id="sh_mgmt" type="number" step="0.5" value="10" />
+          <span class="jk-suffix">% of collected rent</span>
+        </div>
+      </div>
+
+      <div class="jk-field">
+        <label class="jk-label" for="sh_maint">Maintenance Reserve</label>
+        <div class="jk-input-row">
+          <input id="sh_maint" type="number" step="0.5" value="10" />
+          <span class="jk-suffix">% of property value / year</span>
+        </div>
+      </div>
+
+      <div class="jk-field">
+        <label class="jk-label" for="sh_tax">Property Taxes (Monthly)</label>
+        <div class="jk-input-row">
+          <span class="jk-suffix">$</span>
+          <input id="sh_tax" type="number" step="10" placeholder="300" />
+        </div>
+      </div>
+
+      <div class="jk-field">
+        <label class="jk-label" for="sh_ins">Insurance (Monthly)</label>
+        <div class="jk-input-row">
+          <span class="jk-suffix">$</span>
+          <input id="sh_ins" type="number" step="10" placeholder="120" />
+        </div>
+      </div>
+
+      <div class="jk-field">
+        <label class="jk-label" for="sh_hoa">HOA Dues (Monthly)</label>
+        <div class="jk-input-row">
+          <span class="jk-suffix">$</span>
+          <input id="sh_hoa" type="number" step="10" value="0" />
+        </div>
+      </div>
+    </div>
+
+    <h3>3. Future Assumptions</h3>
+    <div class="jk-grid">
+      <div class="jk-field">
+        <label class="jk-label" for="sh_appreciation">Home Price Appreciation</label>
+        <div class="jk-input-row">
+          <input id="sh_appreciation" type="number" step="0.25" value="3" />
+          <span class="jk-suffix">% per year</span>
+        </div>
+      </div>
+
+      <div class="jk-field">
+        <label class="jk-label" for="sh_rent_growth">Rent Growth</label>
+        <div class="jk-input-row">
+          <input id="sh_rent_growth" type="number" step="0.25" value="3" />
+          <span class="jk-suffix">% per year</span>
+        </div>
+      </div>
+
+      <div class="jk-field">
+        <label class="jk-label" for="sh_sell_cost">Selling Costs</label>
+        <div class="jk-input-row">
+          <input id="sh_sell_cost" type="number" step="0.25" value="7" />
+          <span class="jk-suffix">% of sale price</span>
+        </div>
+      </div>
+
+      <div class="jk-field">
+        <label class="jk-label" for="sh_alt_return">Return if You Sell & Invest</label>
+        <div class="jk-input-row">
+          <input id="sh_alt_return" type="number" step="0.25" value="5" />
+          <span class="jk-suffix">% per year</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Capital Gains Advanced Toggle -->
+    <div class="jk-asterisk">
+      *Capital gains taxes are complex and vary by situation. This tool ignores capital gains by default.
+      Use the optional advanced section below for a rough estimate only.
+    </div>
+
+    <label class="jk-advanced-toggle-row">
+      <input type="checkbox" id="sh_cg_toggle" />
+      <span>Include a rough estimate for capital gains taxes (advanced)</span>
+    </label>
+
+    <div id="sh_cg_section" class="jk-advanced-section">
+      <div class="jk-warning">
+        This is a simplified estimate of potential capital gains taxes. The actual rules depend on IRS
+        guidelines, use of the home in the last 5 years, your income, and other factors. Always confirm
+        with a CPA or tax professional.
+      </div>
+
+      <div class="jk-grid" style="margin-top:8px;">
+        <div class="jk-field">
+          <label class="jk-label" for="sh_purchase_price">Original Purchase Price</label>
+          <div class="jk-input-row">
+            <span class="jk-suffix">$</span>
+            <input id="sh_purchase_price" type="number" step="1000" placeholder="350000" />
+          </div>
+        </div>
+
+        <div class="jk-field">
+          <label class="jk-label" for="sh_filing_status">Filing Status</label>
+          <select id="sh_filing_status">
+            <option value="single">Single</option>
+            <option value="married">Married Filing Jointly</option>
+          </select>
+        </div>
+
+        <div class="jk-field">
+          <label class="jk-label" for="sh_years_occupied">Years Lived in Home (last 5 years)</label>
+          <div class="jk-input-row">
+            <input id="sh_years_occupied" type="number" step="0.1" placeholder="2" />
+            <span class="jk-suffix">years</span>
+          </div>
+        </div>
+
+        <div class="jk-field">
+          <label class="jk-label" for="sh_years_out">Years Since Moving Out</label>
+          <div class="jk-input-row">
+            <input id="sh_years_out" type="number" step="0.1" placeholder="0.5" />
+            <span class="jk-suffix">years</span>
+          </div>
+        </div>
+
+        <div class="jk-field">
+          <label class="jk-label" for="sh_cg_rate">Capital Gains Tax Rate (Estimate)</label>
+          <div class="jk-input-row">
+            <input id="sh_cg_rate" type="number" step="0.5" value="15" />
+            <span class="jk-suffix">% of taxable gain</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button id="sh_calculate" class="jk-btn">Calculate Sell vs Rent</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="sh_results_card" class="jk-card" style="display:none;">
+    <h3>Results</h3>
+    <div id="sh_year1_section" class="jk-results"></div>
+    <div id="sh_horizon_section" class="jk-results"></div>
+    <div id="sh_summary_section" style="margin-top:8px;"></div>
+    <div class="jk-note">
+      All figures are estimates based on your inputs. Market conditions, tax rules, and your personal
+      situation will affect actual results.
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  function toNumber(val, fallback) {
+    var n = parseFloat(val);
+    return isNaN(n) ? fallback : n;
+  }
+
+  function fmtMoney(n) {
+    if (!isFinite(n)) return "—";
+    var sign = n < 0 ? "-" : "";
+    n = Math.abs(n);
+    return sign + "$" + n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+  }
+
+  function fmtMoney0(n) {
+    if (!isFinite(n)) return "—";
+    var sign = n < 0 ? "-" : "";
+    n = Math.abs(n);
+    return sign + "$" + n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+  }
+
+  function fmtMoney2(n) {
+    if (!isFinite(n)) return "—";
+    var sign = n < 0 ? "-" : "";
+    n = Math.abs(n);
+    return sign + "$" + n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function fmtPercent(n) {
+    if (!isFinite(n)) return "—";
+    return (n * 100).toFixed(1) + "%";
+  }
+
+  function computeMortgagePayment(balance, annualRate, yearsRemaining) {
+    var r = annualRate / 100;
+    var rm = r / 12;
+    var n = yearsRemaining * 12;
+    if (r === 0 || n <= 0) {
+      return n > 0 ? balance / n : 0;
+    }
+    var numerator = balance * rm * Math.pow(1 + rm, n);
+    var denominator = Math.pow(1 + rm, n) - 1;
+    return numerator / denominator;
+  }
+
+  function remainingBalance(balance, annualRate, yearsRemaining, yearsElapsed) {
+    var r = annualRate / 100;
+    var rm = r / 12;
+    var n = yearsRemaining * 12;
+    var k = Math.min(yearsElapsed * 12, n);
+    if (r === 0) {
+      var paid = (balance / n) * k;
+      return Math.max(0, balance - paid);
+    }
+    var numerator = balance * (Math.pow(1 + rm, n) - Math.pow(1 + rm, k));
+    var denominator = Math.pow(1 + rm, n) - 1;
+    var remaining = numerator / denominator;
+    return remaining < 0 ? 0 : remaining;
+  }
+
+  function computeCapGainsTax(salePrice, purchasePrice, filingStatus, yearsOccupied, yearsOut, cgRatePct) {
+    // If any critical inputs are missing, skip CG
+    if (!salePrice || !purchasePrice || !cgRatePct) return 0;
+
+    var gain = salePrice - purchasePrice;
+    if (gain <= 0) return 0;
+
+    var cgRate = cgRatePct / 100;
+    var exclusion = 0;
+    var meetsUseTest = yearsOccupied >= 2;
+    var withinWindow = yearsOut <= 3; // simplified "2 of last 5 years" logic
+
+    if (meetsUseTest && withinWindow) {
+      exclusion = (filingStatus === "married") ? 500000 : 250000;
+    }
+
+    var taxableGain = gain - exclusion;
+    if (taxableGain <= 0) return 0;
+
+    return taxableGain * cgRate;
+  }
+
+  var cgToggleEl = document.getElementById("sh_cg_toggle");
+  var cgSectionEl = document.getElementById("sh_cg_section");
+  cgToggleEl.addEventListener("change", function() {
+    cgSectionEl.style.display = cgToggleEl.checked ? "block" : "none";
+  });
+
+  document.getElementById("sh_calculate").addEventListener("click", function(e) {
+    e.preventDefault();
+
+    // --- INPUTS ---
+    var V0   = toNumber(document.getElementById("sh_value").value, 0);
+    var LB0  = toNumber(document.getElementById("sh_balance").value, 0);
+    var rate = toNumber(document.getElementById("sh_rate").value, 0);
+    var term = toNumber(document.getElementById("sh_term").value, 0);
+
+    var R0       = toNumber(document.getElementById("sh_rent").value, 0);
+    var Vac      = toNumber(document.getElementById("sh_vacancy").value, 6) / 100;
+    var MgmtPct  = toNumber(document.getElementById("sh_mgmt").value, 10) / 100;
+    var MaintPct = toNumber(document.getElementById("sh_maint").value, 10) / 100;
+    var Tax_m    = toNumber(document.getElementById("sh_tax").value, 0);
+    var Ins_m    = toNumber(document.getElementById("sh_ins").value, 0);
+    var HOA_m    = toNumber(document.getElementById("sh_hoa").value, 0);
+
+    var g   = toNumber(document.getElementById("sh_appreciation").value, 3) / 100;
+    var rg  = toNumber(document.getElementById("sh_rent_growth").value, 3) / 100;
+    var SC  = toNumber(document.getElementById("sh_sell_cost").value, 7) / 100;
+    var rInv = toNumber(document.getElementById("sh_alt_return").value, 5) / 100;
+
+    var includeCG = cgToggleEl.checked;
+    var P0, filingStatus, yearsOcc, yearsOut, cgRate;
+    if (includeCG) {
+      P0           = toNumber(document.getElementById("sh_purchase_price").value, 0);
+      filingStatus = document.getElementById("sh_filing_status").value || "single";
+      yearsOcc     = toNumber(document.getElementById("sh_years_occupied").value, 0);
+      yearsOut     = toNumber(document.getElementById("sh_years_out").value, 0);
+      cgRate       = toNumber(document.getElementById("sh_cg_rate").value, 15);
+    }
+
+    if (!V0 || !R0 || !term) {
+      alert("Please enter at least property value, rent, and remaining term.");
+      return;
+    }
+
+    // --- MORTGAGE ---
+    var PMT = computeMortgagePayment(LB0, rate, term);
+
+    // --- YEAR 1 CASH FLOW ---
+    var ER1 = R0 * (1 - Vac);
+    var Maint_m_1 = (V0 * MaintPct) / 12;
+    var Mgmt_m_1 = ER1 * MgmtPct;
+    var OPEX_m_1 = Mgmt_m_1 + Maint_m_1 + Tax_m + Ins_m + HOA_m;
+    var CF_m_1 = ER1 - OPEX_m_1 - PMT;
+    var CF_a_1 = CF_m_1 * 12;
+
+    // --- HOLD THEN SELL SCENARIO ---
+    var RCF_5 = 0;
+    var RCF_10 = 0;
+    var V5, V10, LB5, LB10, NetSaleBeforeTax_5, NetSaleBeforeTax_10;
+    var NetSaleAfterTax_5, NetSaleAfterTax_10;
+
+    for (var t = 1; t <= 10; t++) {
+      var V_t = V0 * Math.pow(1 + g, t);
+      var R_t = R0 * Math.pow(1 + rg, t - 1);
+      var ER_t = R_t * (1 - Vac);
+
+      var Maint_m_t = (V_t * MaintPct) / 12;
+      var Mgmt_m_t = ER_t * MgmtPct;
+      var OPEX_m_t = Mgmt_m_t + Maint_m_t + Tax_m + Ins_m + HOA_m;
+
+      var CF_m_t = ER_t - OPEX_m_t - PMT;
+      var CF_a_t = CF_m_t * 12;
+
+      if (t <= 5) RCF_5 += CF_a_t;
+      RCF_10 += CF_a_t;
+
+      if (t === 5) {
+        V5 = V_t;
+        LB5 = remainingBalance(LB0, rate, term, 5);
+        NetSaleBeforeTax_5 = V5 * (1 - SC) - LB5;
+      }
+      if (t === 10) {
+        V10 = V_t;
+        LB10 = remainingBalance(LB0, rate, term, 10);
+        NetSaleBeforeTax_10 = V10 * (1 - SC) - LB10;
+      }
+    }
+
+    if (!V5) {
+      V5 = V0 * Math.pow(1 + g, 5);
+      LB5 = remainingBalance(LB0, rate, term, 5);
+      NetSaleBeforeTax_5 = V5 * (1 - SC) - LB5;
+    }
+    if (!V10) {
+      V10 = V0 * Math.pow(1 + g, 10);
+      LB10 = remainingBalance(LB0, rate, term, 10);
+      NetSaleBeforeTax_10 = V10 * (1 - SC) - LB10;
+    }
+
+    if (includeCG) {
+      var CGTax_5 = computeCapGainsTax(V5, P0, filingStatus, yearsOcc, yearsOut + 5, cgRate);
+      var CGTax_10 = computeCapGainsTax(V10, P0, filingStatus, yearsOcc, yearsOut + 10, cgRate);
+      NetSaleAfterTax_5 = NetSaleBeforeTax_5 - CGTax_5;
+      NetSaleAfterTax_10 = NetSaleBeforeTax_10 - CGTax_10;
+    } else {
+      NetSaleAfterTax_5 = NetSaleBeforeTax_5;
+      NetSaleAfterTax_10 = NetSaleBeforeTax_10;
+    }
+
+    var Wealth_Hold_5 = RCF_5 + NetSaleAfterTax_5;
+    var Wealth_Hold_10 = RCF_10 + NetSaleAfterTax_10;
+
+    // --- SELL NOW & INVEST SCENARIO ---
+    var NetSaleBeforeTax_0 = V0 * (1 - SC) - LB0;
+    var NetSaleAfterTax_0;
+    if (includeCG) {
+      var CGTax_0 = computeCapGainsTax(V0, P0, filingStatus, yearsOcc, yearsOut, cgRate);
+      NetSaleAfterTax_0 = NetSaleBeforeTax_0 - CGTax_0;
+    } else {
+      NetSaleAfterTax_0 = NetSaleBeforeTax_0;
+    }
+
+    var FV_Sell_5 = NetSaleAfterTax_0 * Math.pow(1 + rInv, 5);
+    var FV_Sell_10 = NetSaleAfterTax_0 * Math.pow(1 + rInv, 10);
+
+    // --- SIMPLE ROIs (not IRR, just growth multiple) ---
+    var ROI_Hold_5 = (Wealth_Hold_5 - NetSaleAfterTax_0) / Math.max(NetSaleAfterTax_0, 1);
+    var ROI_Sell_5 = (FV_Sell_5 - NetSaleAfterTax_0) / Math.max(NetSaleAfterTax_0, 1);
+
+    var ROI_Hold_10 = (Wealth_Hold_10 - NetSaleAfterTax_0) / Math.max(NetSaleAfterTax_0, 1);
+    var ROI_Sell_10 = (FV_Sell_10 - NetSaleAfterTax_0) / Math.max(NetSaleAfterTax_0, 1);
+
+    // --- RENDER RESULTS ---
+    var year1Html = "";
+    year1Html += '<div class="jk-result-card">';
+    year1Html += '<div class="jk-result-title">Year 1 Landlord Snapshot</div>';
+    year1Html += '<div>Gross Monthly Rent: ' + fmtMoney0(R0) + '</div>';
+    year1Html += '<div>Vacancy-Adjusted Rent: ' + fmtMoney0(ER1) + '</div>';
+    year1Html += '<div>Mortgage Payment: ' + fmtMoney0(PMT) + '</div>';
+    year1Html += '<div>Operating Expenses (est.): ' + fmtMoney0(OPEX_m_1) + '</div>';
+    year1Html += '<div class="jk-result-highlight">Estimated Monthly Cash Flow: ' + fmtMoney0(CF_m_1) + '</div>';
+    year1Html += '<div>Estimated Annual Cash Flow: ' + fmtMoney0(CF_a_1) + '</div>';
+    year1Html += '<div class="jk-pill-row">';
+    year1Html += '<span class="jk-pill">Mgmt: ' + fmtPercent(MgmtPct) + ' of rent</span>';
+    year1Html += '<span class="jk-pill">Maint: ' + fmtPercent(MaintPct) + ' of value / yr</span>';
+    year1Html += '</div>';
+    year1Html += '</div>';
+
+    var horizonHtml = "";
+
+    // 5-year comparison
+    horizonHtml += '<div class="jk-result-card">';
+    horizonHtml += '<div class="jk-result-title">5-Year Horizon</div>';
+    horizonHtml += '<div><strong>Hold & Rent:</strong> ' + fmtMoney0(Wealth_Hold_5) + '</div>';
+    horizonHtml += '<div style="font-size:0.8rem;margin-top:2px;">Includes ' + fmtMoney0(RCF_5) + ' total cash flow + ' + fmtMoney0(NetSaleAfterTax_5) + ' after selling in year 5.</div>';
+    horizonHtml += '<div style="margin-top:6px;"><strong>Sell Now & Invest:</strong> ' + fmtMoney0(FV_Sell_5) + '</div>';
+    horizonHtml += '<div style="font-size:0.8rem;margin-top:2px;">Assumes ' + fmtPercent(rInv) + ' annual return on your net proceeds for 5 years.</div>';
+    horizonHtml += '<div style="margin-top:6px;font-size:0.85rem;">Hold ROI vs proceeds: ' + fmtPercent(ROI_Hold_5) + ' • Sell ROI vs proceeds: ' + fmtPercent(ROI_Sell_5) + '</div>';
+    horizonHtml += '</div>';
+
+    // 10-year comparison
+    horizonHtml += '<div class="jk-result-card">';
+    horizonHtml += '<div class="jk-result-title">10-Year Horizon</div>';
+    horizonHtml += '<div><strong>Hold & Rent:</strong> ' + fmtMoney0(Wealth_Hold_10) + '</div>';
+    horizonHtml += '<div style="font-size:0.8rem;margin-top:2px;">Includes ' + fmtMoney0(RCF_10) + ' total cash flow + ' + fmtMoney0(NetSaleAfterTax_10) + ' after selling in year 10.</div>';
+    horizonHtml += '<div style="margin-top:6px;"><strong>Sell Now & Invest:</strong> ' + fmtMoney0(FV_Sell_10) + '</div>';
+    horizonHtml += '<div style="font-size:0.8rem;margin-top:2px;">Assumes ' + fmtPercent(rInv) + ' annual return on your net proceeds for 10 years.</div>';
+    horizonHtml += '<div style="margin-top:6px;font-size:0.85rem;">Hold ROI vs proceeds: ' + fmtPercent(ROI_Hold_10) + ' • Sell ROI vs proceeds: ' + fmtPercent(ROI_Sell_10) + '</div>';
+    horizonHtml += '</div>';
+
+    var summaryHtml = "";
+    var diff5 = Wealth_Hold_5 - FV_Sell_5;
+    var diff10 = Wealth_Hold_10 - FV_Sell_10;
+
+    summaryHtml += '<div class="jk-result-card">';
+    summaryHtml += '<div class="jk-result-title">Summary Interpretation</div>';
+
+    // 5-year summary
+    summaryHtml += '<div style="margin-top:4px;"><strong>5-Year:</strong> ';
+    if (diff5 > 0) {
+      summaryHtml += '<span class="jk-summary-win">Holding & Renting comes out ahead by ' + fmtMoney0(diff5) + '.</span>';
+    } else if (diff5 < 0) {
+      summaryHtml += '<span class="jk-summary-lose">Selling now & investing comes out ahead by ' + fmtMoney0(-diff5) + '.</span>';
+    } else {
+      summaryHtml += 'Both paths are roughly even at 5 years.';
+    }
+    summaryHtml += '</div>';
+
+    // 10-year summary
+    summaryHtml += '<div style="margin-top:4px;"><strong>10-Year:</strong> ';
+    if (diff10 > 0) {
+      summaryHtml += '<span class="jk-summary-win">Holding & Renting comes out ahead by ' + fmtMoney0(diff10) + '.</span>';
+    } else if (diff10 < 0) {
+      summaryHtml += '<span class="jk-summary-lose">Selling now & investing comes out ahead by ' + fmtMoney0(-diff10) + '.</span>';
+    } else {
+      summaryHtml += 'Both paths are roughly even at 10 years.';
+    }
+    summaryHtml += '</div>';
+
+    summaryHtml += '<div class="jk-note" style="margin-top:6px;">This does not account for your personal stress level, time, or risk tolerance. Math is only part of the decision.</div>';
+    if (includeCG) {
+      summaryHtml += '<div class="jk-asterisk">Capital gains are estimated using a simplified version of the 2-of-5-years rule and a flat tax rate. A CPA can give you a precise number.</div>';
+    } else {
+      summaryHtml += '<div class="jk-asterisk">Capital gains taxes are <strong>not</strong> included in these results. In many primary residence cases, part or all of the gain may be excluded — talk with a CPA.</div>';
+    }
+
+    summaryHtml += '</div>';
+
+    document.getElementById("sh_year1_section").innerHTML = year1Html;
+    document.getElementById("sh_horizon_section").innerHTML = horizonHtml;
+    document.getElementById("sh_summary_section").innerHTML = summaryHtml;
+
+    document.getElementById("sh_results_card").style.display = "block";
+    document.getElementById("sh_results_card").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+})();
+</script>
+</body>
+</html>
